@@ -1,3 +1,3 @@
-export const getRanking = (req, res) => {
+export const getRanking = async (req, res) => {
   res.send('getRanking');
 }
