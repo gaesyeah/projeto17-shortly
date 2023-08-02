@@ -9,6 +9,7 @@ export const signUp = async (req, res) => {
   try{
     await db.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3);', [name, email, bcrypt.hashSync(password, 10)]);
     res.sendStatus(201);
+    
   } catch ({ code, detail }) {
     if (code === "23505") return res.status(409).send(detail)
     res.sendStatus(500);
