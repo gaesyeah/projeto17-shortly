@@ -33,9 +33,36 @@ export const getUrlById = async (req, res) => {
 };
 
 export const getOpenShortUrl = async (req, res) => {
-  res.send('getOpenShortUrl');
+  const { shortUrl } = req.params;
+  try {
+    const { rows, rowCount } = await db.query('SELECT url FROM urls WHERE "shortUrl" = $1;', [shortUrl]);
+    if (rowCount === 0) return res.status(404).send({ message: 'Url not Found' });
+
+    await db.query('UPDATE urls SET "visitCount" = "visitCount"+1 WHERE "shortUrl" = $1;', [shortUrl]);
+
+    res.redirect(rows[0].url);
+
+  } catch ({ detail }) {
+    res.status(500).send(detail);
+  }
 };
 
 export const deleteUrlById = async (req, res) => {
-  res.send('deleteUrlById');
+  const { id } = req.params;
+  const { authorization } = req.headers;
+  try {
+    const { rows, rowCount } = await db.query('SELECT "userId" FROM urls WHERE id = $1;', [id]);
+    if (rowCount === 0) return res.status(404).send('Url not Found');
+
+    const token = authorization.replace('Bearer ','');
+    const sessions = await db.query('SELECT "userId" FROM sessions WHERE token = $1;', [token]);
+    if (sessions.rows[0].userId !== rows[0].userId) return res.status(401).send('You can only delete a url shortened by you'); 
+
+    await db.query('DELETE FROM urls WHERE id = $1;', [id]);
+
+    res.sendStatus(204);
+
+  } catch ({ detail }) {
+    res.status(500).send(detail);
+  }
 }
