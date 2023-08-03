@@ -6,7 +6,7 @@ export const postShortenUrl = async (req, res) => {
   const { url } = req.body;
   const { authorization } = req.headers;
 
-  if (!isURL(req.body.imgUrl)) return res.status(422).send('\"url\" must be a valid url');
+  if (!isURL(url)) return res.status(422).send('\"url\" must be a valid url');
 
   try {
     const token = authorization.replace('Bearer ','');
