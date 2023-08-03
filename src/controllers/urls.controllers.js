@@ -21,7 +21,15 @@ export const postShortenUrl = async (req, res) => {
 };
 
 export const getUrlById = async (req, res) => {
-  res.send('getUrlById');
+  const { id } = req.params;
+  try {
+    const { rows, rowCount } = await db.query('SELECT id, "shortUrl", url FROM urls WHERE id = $1;', [id]);
+    if (rowCount === 0) return res.status(404).send({ message: 'Url not Found' });
+    
+    res.status(200).send(rows[0]);
+    } catch ({ detail }) {
+    res.status(500).send(detail);
+  }
 };
 
 export const getOpenShortUrl = async (req, res) => {
