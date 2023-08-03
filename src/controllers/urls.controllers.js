@@ -1,9 +1,12 @@
 import { nanoid } from 'nanoid';
 import { db } from '../database/database.js';
+import { isURL } from '../functions/urlValidation.js';
 
 export const postShortenUrl = async (req, res) => {
   const { url } = req.body;
   const { authorization } = req.headers;
+
+  if (!isURL(req.body.imgUrl)) return res.status(422).send('\"url\" must be a valid url');
 
   try {
     const token = authorization.replace('Bearer ','');
