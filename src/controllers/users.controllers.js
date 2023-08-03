@@ -35,5 +35,31 @@ export const signIn = async (req, res) => {
 }
 
 export const getAllUserData = async (req, res) => {
-  res.send('getAllUserData');
+  const { authorization } = req.headers;
+  try {
+    const token = authorization.replace('Bearer ','');
+    const { rows } = await db.query(`
+      SELECT 
+        users.id, users.name,
+        CAST(SUM(urls."visitCount") AS INTEGER) AS "visitCount",
+        JSON_AGG(JSON_BUILD_OBJECT(
+          'id', urls.id,
+          'shortUrl', urls."shortUrl",
+          'url', urls.url,
+          'visitCount', urls."visitCount"
+        ) ORDER by urls.id ) AS shortenedUrls
+      FROM sessions
+        JOIN users
+        ON sessions."userId" = users.id
+        JOIN urls
+        ON urls."userId" = users.id
+      WHERE token = $1
+      GROUP BY users.id
+    ;`, [token]);
+
+    res.status(200).send(rows[0]);
+    
+  } catch ({ detail }) {
+    res.status(500).send(detail);
+  }
 };
