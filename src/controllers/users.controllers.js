@@ -47,7 +47,7 @@ export const getAllUserData = async (req, res) => {
           'shortUrl', urls."shortUrl",
           'url', urls.url,
           'visitCount', urls."visitCount"
-        ) ORDER by urls.id ) AS shortenedUrls
+        ) ORDER by urls."visitCount" DESC) AS shortenedUrls
       FROM sessions
         JOIN users
         ON sessions."userId" = users.id
