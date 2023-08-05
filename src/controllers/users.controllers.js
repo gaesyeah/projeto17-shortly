@@ -41,7 +41,7 @@ export const getAllUserData = async (req, res) => {
     const { rows } = await db.query(`
       SELECT 
         users.id, users.name,
-        CAST(SUM(urls."visitCount") AS INTEGER) AS "visitCount",
+        COALESCE(CAST(SUM(urls."visitCount") AS INTEGER), 0) AS "visitCount",
         JSON_AGG(JSON_BUILD_OBJECT(
           'id', urls.id,
           'shortUrl', urls."shortUrl",
@@ -51,11 +51,13 @@ export const getAllUserData = async (req, res) => {
       FROM sessions
         JOIN users
         ON sessions."userId" = users.id
-        JOIN urls
+        LEFT JOIN urls
         ON urls."userId" = users.id
       WHERE token = $1
       GROUP BY users.id
     ;`, [token]);
+    /*LEFT JOIN é necessário porque o usuario pode não ter nenhum link encurtado
+    encurtados, então não há colunas na tabela urls referente a eles*/
 
     res.status(200).send(rows[0]);
     
