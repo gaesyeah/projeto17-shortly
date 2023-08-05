@@ -56,8 +56,8 @@ export const getAllUserData = async (req, res) => {
       WHERE token = $1
       GROUP BY users.id
     ;`, [token]);
-    /*LEFT JOIN é necessário porque o usuario pode não ter nenhum link encurtado
-    encurtados, então não há colunas na tabela urls referente a eles*/
+    /*LEFT JOIN é necessário porque o usuario pode não ter nenhum link 
+    encurtado, então não há colunas na tabela urls referente a eles*/
 
     res.status(200).send(rows[0]);
     
