@@ -42,13 +42,15 @@ export const getAllUserData = async (req, res) => {
       SELECT 
         users.id, users.name,
         COALESCE(CAST(SUM(urls."visitCount") AS INTEGER), 0) AS "visitCount",
-        CASE WHEN COUNT(urls.id) > 0 THEN
-          JSON_AGG(JSON_BUILD_OBJECT(
-            'id', urls.id,
-            'shortUrl', urls."shortUrl",
-            'url', urls.url,
-            'visitCount', urls."visitCount"
-          ) ORDER by urls."visitCount" DESC) 
+        CASE WHEN COUNT(urls.id) > 0 
+          THEN
+            JSON_AGG(JSON_BUILD_OBJECT(
+              'id', urls.id,
+              'shortUrl', urls."shortUrl",
+              'url', urls.url,
+              'visitCount', urls."visitCount"
+            ) ORDER by urls."visitCount" DESC) 
+          ELSE '[]'::json
         END AS "shortenedUrls"
       FROM sessions
         JOIN users
@@ -67,29 +69,3 @@ export const getAllUserData = async (req, res) => {
     res.status(500).send(detail);
   }
 };
-
-//OUTRA FORMA DE BUSCAR OS DADOS DA FUNÇÃO getAlluserData
-/* 
-const { rows } = await db.query(`
-SELECT 
-  users.id, users.name,
-  COALESCE(CAST(SUM(urls."visitCount") AS INTEGER), 0) AS "visitCount",
-  (SELECT 
-    JSON_AGG(JSON_BUILD_OBJECT(
-      'id', urls.id,
-      'shortUrl', urls."shortUrl",
-      'url', urls.url,
-      'visitCount', urls."visitCount"
-    ) ORDER by urls."visitCount" DESC) 
-  FROM urls 
-  WHERE urls."userId" = users.id) 
-  AS "shortenedUrls"
-FROM sessions
-  JOIN users
-  ON sessions."userId" = users.id
-  LEFT JOIN urls
-  ON urls."userId" = users.id
-WHERE token = $1
-GROUP BY users.id
-;`, [token]); 
-*/
